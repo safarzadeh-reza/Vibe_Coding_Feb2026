@@ -1,0 +1,228 @@
+{
+  "personal": {
+    "name": "Reza Safarzadeh",
+    "tagline": "Geospatial Data Scientist | GIS Analyst | Spatial AI Expert",
+    "summary": "PhD candidate in Geomatics Engineering at the University of Calgary, specializing in AI-driven spatial optimization and machine learning for transportation systems. I develop intelligent decision support tools that translate complex spatial data into actionable insights, bridging data science, AI, and geospatial systems to solve real-world challenges.",
+    "email": "reza.sz70@gmail.com",
+    "phone": "+1 (403) 708-5652",
+    "location": "Calgary, AB, Canada",
+    "website": "https://safarzadeh-reza.github.io",
+    "linkedin": "https://linkedin.com/in/safarzadehreza",
+    "github": "https://github.com/safarzadeh-reza",
+    "googleScholar": ""
+  },
+  "focusAreas": [
+    {
+      "title": "AI & Machine Learning",
+      "description": "Deep learning, reinforcement learning, and predictive analytics for spatial optimization"
+    },
+    {
+      "title": "Geospatial Analysis",
+      "description": "ArcGIS, QGIS, PostGIS, and spatial database systems for complex geographic analysis"
+    },
+    {
+      "title": "Transportation Systems",
+      "description": "Traffic prediction, route optimization, and fleet management solutions"
+    },
+    {
+      "title": "Data Visualization",
+      "description": "Interactive dashboards and web mapping applications using modern frameworks"
+    },
+    {
+      "title": "Python Development",
+      "description": "PyTorch, TensorFlow, GeoPandas, and scientific computing libraries"
+    },
+    {
+      "title": "Web GIS",
+      "description": "JavaScript, Leaflet, Mapbox, and ArcGIS Maps SDK for web applications"
+    }
+  ],
+  "education": [
+    {
+      "degree": "PhD",
+      "field": "Geomatics Engineering - Geospatial Information Science (GIS)",
+      "institution": "University of Calgary",
+      "location": "Calgary, Canada",
+      "period": "2021 - 2025",
+      "focus": "AI-driven spatial optimization, machine learning for transportation systems, and intelligent decision support tools"
+    },
+    {
+      "degree": "MSc",
+      "field": "Geomatics Engineering - Geospatial Information Science (GIS)",
+      "institution": "K. N. Toosi University of Technology",
+      "location": "Tehran, Iran",
+      "period": "2013 - 2017",
+      "focus": "Advanced geospatial analysis, spatial database systems, and GIS application development"
+    },
+    {
+      "degree": "BSc",
+      "field": "Geomatics Engineering",
+      "institution": "Iran University of Science and Technology",
+      "location": "Tehran, Iran",
+      "period": "2009 - 2013",
+      "focus": "Foundation in surveying, cartography, remote sensing, and spatial information systems"
+    }
+  ],
+  "experience": [
+    {
+      "title": "Research Assistant & Project Lead (Geospatial Data Scientist)",
+      "organization": "University of Calgary",
+      "location": "Calgary, Canada",
+      "period": "2021 - Present",
+      "highlights": [
+        {
+          "title": "ML/DL-based Transportation Optimization",
+          "description": "Collaborated with City of Calgary to transform urban mobility through deep learning-based traffic prediction and machine learning models for route optimization, delivering 14% improvement in travel time efficiency and 4% reduction in CO₂ emissions."
+        },
+        {
+          "title": "AI-based Fleet Optimization",
+          "description": "Built vehicle routing and scheduling system using Python and mixed-integer programming that reduced fleet size by 24% and distance traveled by 19% through demand pattern optimization."
+        },
+        {
+          "title": "Shuttle Routing Solution",
+          "description": "Designed cost-efficient routing system for Suncor Energy using Python optimization libraries and created interactive Flask/Mapbox dashboard for real-time visualization."
+        }
+      ]
+    },
+    {
+      "title": "Spatial Data Scientist & Team Lead",
+      "organization": "PARSA Co. (FANAP ICT Group)",
+      "location": "Tehran, Iran",
+      "period": "2018 - 2021",
+      "highlights": [
+        {
+          "title": "Financial Services Innovation",
+          "description": "Developed LSTM-CNN hybrid model in TensorFlow to forecast daily cash demand for nationwide ATM network, reducing cash replenishment costs by 12%."
+        },
+        {
+          "title": "Logistics Transformation",
+          "description": "Built GPS-based fleet management system with real-time tracking dashboards and Python-based routing optimization engine for cash-in-transit operations."
+        },
+        {
+          "title": "Network Optimization",
+          "description": "Created GIS-based optimization tool using ArcGIS Pro and spatial analysis to evaluate ATM placement locations, improving average transaction efficiency by 15%."
+        },
+        {
+          "title": "Cross-Functional Leadership",
+          "description": "Led team of 4 data scientists, coordinating model development workflows, code reviews, and stakeholder presentations while establishing data quality standards."
+        }
+      ]
+    },
+    {
+      "title": "GIS Specialist",
+      "organization": "AvayarSanat Co.",
+      "location": "Tehran, Iran",
+      "period": "2017 - 2018",
+      "highlights": [
+        {
+          "title": "Planning Support",
+          "description": "Produced thematic maps using ArcGIS Pro and QGIS for tourism projects, conducting spatial analyses including site suitability, accessibility, and demographic visualization."
+        },
+        {
+          "title": "Data Governance & Standards",
+          "description": "Developed geospatial data management workflows and quality control procedures for PostgreSQL/PostGIS databases."
+        },
+        {
+          "title": "Capacity Building",
+          "description": "Conducted technical training sessions and provided ongoing GIS support to staff across multiple departments."
+        }
+      ]
+    }
+  ],
+  "skills": {
+    "programming": ["Python (PyTorch, TensorFlow, Pandas, GeoPandas, Scikit-learn, PyG, DGL)", "C++", "Git"],
+    "gis": ["ArcGIS Pro", "ArcGIS Online", "QGIS", "ArcGIS Server", "ArcGIS Dashboards", "GeoServer", "Civil 3D", "AutoCAD"],
+    "web": ["JavaScript", "HTML/CSS", "Flask", "Django", "Leaflet", "Mapbox", "ArcGIS Maps SDK", "ArcGIS Dashboards", "Tableau", "Power BI"],
+    "databases": ["PostgreSQL/PostGIS", "MSSQL Server", "Neo4j", "Microsoft Azure"]
+  },
+  "projects": [
+    {
+      "title": "EcoTruck Smart Navigator",
+      "category": "Research",
+      "problem": "Optimize routing and range estimation for electric vehicle fleets considering spatial data and weather conditions.",
+      "solution": "Built an AI-enabled platform using reinforcement learning and graph-based deep learning modeling.",
+      "stack": ["Python", "PyTorch", "Reinforcement Learning", "Graph Neural Networks"],
+      "outcomes": "Integrates predictive analytics for fleet optimization decisions.",
+      "link": "https://safarzadeh-reza.github.io/projects/ecotruck/",
+      "featured": false
+    },
+    {
+      "title": "Smart Route Optimizer",
+      "category": "Research",
+      "problem": "Generate adaptive route recommendations based on real-time traffic patterns and network dynamics.",
+      "solution": "Developed an intelligent routing system using machine learning and reinforcement learning.",
+      "stack": ["Python", "Machine Learning", "Reinforcement Learning"],
+      "outcomes": "Provides real-time adaptive routing recommendations.",
+      "link": "https://safarzadeh-reza.github.io/projects/smart_route/",
+      "featured": false
+    },
+    {
+      "title": "Fleet Management with Traccar",
+      "category": "Software",
+      "problem": "Track and manage enterprise vehicle fleets with real-time GPS data and spatial optimization.",
+      "solution": "Built an enterprise GPS-based fleet analytics platform with automated reporting capabilities.",
+      "stack": ["Python", "Traccar", "PostgreSQL", "Dashboards"],
+      "outcomes": "Real-time dashboards with spatial optimization capabilities.",
+      "link": "https://safarzadeh-reza.github.io/projects/traccar/",
+      "featured": false
+    },
+    {
+      "title": "ATM Network GeoBI Dashboard",
+      "category": "Dashboard",
+      "problem": "Optimize ATM network planning using spatial business intelligence and predictive analytics.",
+      "solution": "Created a spatial BI system integrating predictive analytics, demographics, and performance metrics.",
+      "stack": ["ArcGIS", "Python", "Power BI", "PostgreSQL"],
+      "outcomes": "Improved ATM placement decisions and transaction efficiency.",
+      "link": "https://safarzadeh-reza.github.io/projects/GeoBI/",
+      "featured": false
+    },
+    {
+      "title": "Interactive Webmap Demo",
+      "category": "GIS",
+      "problem": "Demonstrate web mapping capabilities with interactive geospatial visualization.",
+      "solution": "Built an HTML-based interactive webmap showcasing spatial data visualization techniques.",
+      "stack": ["HTML", "JavaScript", "Leaflet", "CSS"],
+      "outcomes": "Interactive demonstration of web GIS capabilities.",
+      "link": "./demos/webmap/",
+      "demoPath": "demos/webmap/index.html",
+      "featured": true
+    },
+    {
+      "title": "Dijkstra's Algorithm Visualizer",
+      "category": "Software",
+      "problem": "Visualize pathfinding algorithms to understand graph traversal and shortest path computation.",
+      "solution": "Created an interactive web-based visualization of Dijkstra's algorithm with step-by-step animation.",
+      "stack": ["HTML", "JavaScript", "CSS", "Canvas"],
+      "outcomes": "Educational tool demonstrating algorithm visualization.",
+      "link": "./demos/dijkstra/",
+      "demoPath": "demos/dijkstra/index.html",
+      "featured": true
+    }
+  ],
+  "awards": [
+    {
+      "title": "Alberta Innovates Graduate Student Scholarships Award",
+      "issuer": "Alberta Innovates",
+      "year": "2025",
+      "description": "Supports the next generation of leaders in emerging technology areas in their pursuit of academic excellence."
+    },
+    {
+      "title": "Lab2Market Alberta Mitacs Business Strategy Award",
+      "issuer": "Lab2Market and Mitacs",
+      "year": "2024",
+      "description": "Supporting PhD students in commercializing research innovations and exploring entrepreneurship."
+    },
+    {
+      "title": "Alberta Machine Intelligence Institute (Amii) Talent Award",
+      "issuer": "Alberta Machine Intelligence Institute",
+      "year": "2023",
+      "description": "Supports students advancing the field of artificial intelligence in Alberta through impactful research."
+    },
+    {
+      "title": "ESRI Student of the Year Award",
+      "issuer": "ESRI Canada Centre of Excellence (ECCE)",
+      "year": "2022",
+      "description": "Awarded to a student who demonstrates exceptional performance and innovation in GIS research and applications."
+    }
+  ]
+}

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--
+    ╔══════════════════════════════════════════════════════════════╗
+    ║  webmap-demo — Leaflet Classroom Demo                       ║
+    ║  Author: Reza (classroom use)                               ║
+    ║                                                              ║
+    ║  README / CORS NOTE:                                         ║
+    ║  If you open this file directly (file:// protocol), fetch    ║
+    ║  calls to data.calgary.ca may be blocked by CORS.            ║
+    ║  Run a local server instead:                                 ║
+    ║    python -m http.server 8000                                ║
+    ║  Then visit http://localhost:8000                             ║
+    ╚══════════════════════════════════════════════════════════════╝
+  -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calgary Webmap Demo</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Google Font for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ───────── Reset & Base ───────── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        /* ───────── Layout ───────── */
+        #app {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* ───────── Sidebar ───────── */
+        #sidebar {
+            width: 320px;
+            min-width: 320px;
+            background: linear-gradient(180deg, #1a1d23 0%, #23272f 100%);
+            color: #e0e4ec;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.35s cubic-bezier(.4, 0, .2, 1),
+                opacity 0.25s ease;
+            z-index: 1000;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, .35);
+            overflow-y: auto;
+        }
+
+        #sidebar.collapsed {
+            margin-left: -320px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #sidebar-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        #sidebar-header h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #sidebar-header p {
+            margin-top: 4px;
+            font-size: 0.75rem;
+            color: #8b93a7;
+        }
+
+        .panel {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .panel-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7385;
+            margin-bottom: 12px;
+        }
+
+        /* Radio / Checkbox items */
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 2px;
+        }
+
+        .layer-item:hover {
+            background: rgba(255, 255, 255, .05);
+        }
+
+        .layer-item input[type="radio"],
+        .layer-item input[type="checkbox"] {
+            accent-color: #60a5fa;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .layer-item label {
+            font-size: 0.85rem;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        /* Swatch dot next to overlay labels */
+        .swatch {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        /* Opacity slider */
+        .opacity-control {
+            padding: 4px 10px 8px 36px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: #8b93a7;
+        }
+
+        .opacity-control input[type="range"] {
+            flex: 1;
+            accent-color: #60a5fa;
+            height: 4px;
+            cursor: pointer;
+        }
+
+        .opacity-val {
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* Status bar at bottom of sidebar */
+        #status-bar {
+            margin-top: auto;
+            padding: 14px 20px;
+            font-size: 0.7rem;
+            color: #555d6f;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+            line-height: 1.5;
+        }
+
+        #status-bar a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        /* ───────── Toggle Button ───────── */
+        #sidebar-toggle {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 1100;
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(26, 29, 35, .88);
+            backdrop-filter: blur(8px);
+            color: #e0e4ec;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .3);
+            transition: left 0.35s cubic-bezier(.4, 0, .2, 1),
+                background 0.2s;
+        }
+
+        #sidebar-toggle:hover {
+            background: rgba(96, 165, 250, .25);
+        }
+
+        #sidebar-toggle.shifted {
+            left: 332px;
+        }
+
+        /* ───────── Map ───────── */
+        #map {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ───────── Leaflet popup override ───────── */
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 0.82rem;
+        }
+
+        .popup-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: #1e293b;
+        }
+
+        .popup-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .popup-key {
+            color: #64748b;
+        }
+
+        .popup-val {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        /* ───────── Loading spinner overlay ───────── */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(26, 29, 35, .55);
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(96, 165, 250, .25);
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <div id="sidebar-header">
+                <h1>🗺️ Calgary Webmap Demo</h1>
+                <p>Leaflet · Open Data · Classroom Demo</p>
+            </div>
+
+            <!-- Basemap Switcher -->
+            <div class="panel">
+                <div class="panel-title">Basemap</div>
+
+                <div class="layer-item">
+                    <input type="radio" name="basemap" id="bm-osm" value="osm" checked />
+                    <label for="bm-osm">OpenStreetMap</label>
+                </div>
+
+                <div class="layer-item">
+                    <input type="radio" name="basemap" id="bm-carto" value="carto" />
+                    <label for="bm-carto">CartoDB Dark Matter</label>
+                </div>
+            </div>
+
+            <!-- Overlays -->
+            <div class="panel">
+                <div class="panel-title">Overlays</div>
+
+                <!-- Community Boundaries -->
+                <div class="layer-item">
+                    <input type="checkbox" id="ov-communities" checked />
+                    <label for="ov-communities">
+                        <span class="swatch" style="background:#60a5fa;"></span>Community Boundaries
+                    </label>
+                </div>
+                <div class="opacity-control" id="oc-communities">
+                    <span>Opacity</span>
+                    <input type="range" min="0" max="100" value="50" id="op-communities" />
+                    <span class="opacity-val" id="opv-communities">50%</span>
+                </div>
+
+                <!-- Parks -->
+                <div class="layer-item">
+                    <input type="checkbox" id="ov-parks" />
+                    <label for="ov-parks">
+                        <span class="swatch" style="background:#34d399;"></span>Parks
+                    </label>
+                </div>
+                <div class="opacity-control" id="oc-parks">
+                    <span>Opacity</span>
+                    <input type="range" min="0" max="100" value="60" id="op-parks" />
+                    <span class="opacity-val" id="opv-parks">60%</span>
+                </div>
+            </div>
+
+            <div id="status-bar">
+                Data: <a href="https://data.calgary.ca" target="_blank">City of Calgary Open Data</a><br />
+                Built with <a href="https://leafletjs.com" target="_blank">Leaflet 1.9</a>
+            </div>
+        </aside>
+
+        <!-- Sidebar toggle button -->
+        <button id="sidebar-toggle" class="shifted" title="Toggle sidebar">☰</button>
+
+        <!-- Map -->
+        <div id="map">
+            <div class="loading-overlay" id="loader">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // ──────────────────────────────────────────────
+        // 1. Initialize the map — centered on Calgary
+        // ──────────────────────────────────────────────
+        const map = L.map('map', {
+            center: [51.0447, -114.0719],   // Calgary downtown
+            zoom: 11,
+            zoomControl: false
+        });
+
+        // Zoom control in bottom-right so it doesn't overlap the sidebar
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // ──────────────────────────────────────────────
+        // 2. Define basemap tile layers
+        // ──────────────────────────────────────────────
+        const basemaps = {
+            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }),
+            carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 20,
+                attribution: '&copy; <a href="https://carto.com/">CARTO</a> &middot; OSM'
+            })
+        };
+
+        // Start with OSM
+        basemaps.osm.addTo(map);
+
+        // Basemap radio buttons
+        document.querySelectorAll('input[name="basemap"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                Object.values(basemaps).forEach(l => map.removeLayer(l));
+                basemaps[radio.value].addTo(map);
+            });
+        });
+
+        // ──────────────────────────────────────────────
+        // 3. Overlay layers
+        // ──────────────────────────────────────────────
+
+        // --- 3a. Calgary Community Boundaries (Socrata GeoJSON) ---
+        let commLayer = null;
+        let commOpacity = 0.50;
+
+        const COMMUNITIES_URL =
+            'https://data.calgary.ca/resource/surr-xmvs.geojson?$limit=5000';
+
+        function communityStyle() {
+            return {
+                color: '#3b82f6',
+                weight: 1.5,
+                fillColor: '#60a5fa',
+                fillOpacity: commOpacity,
+                opacity: 0.9
+            };
+        }
+
+        function communityPopup(feature) {
+            const p = feature.properties;
+            return `
+    <div class="popup-title">${p.name || 'Unknown'}</div>
+    <div class="popup-row"><span class="popup-key">Sector</span><span class="popup-val">${p.sector || '—'}</span></div>
+    <div class="popup-row"><span class="popup-key">Class</span><span class="popup-val">${p.class || '—'}</span></div>
+    <div class="popup-row"><span class="popup-key">Code</span><span class="popup-val">${p.comm_code || '—'}</span></div>
+    <div class="popup-row"><span class="popup-key">Structure</span><span class="popup-val">${p.comm_structure || '—'}</span></div>
+  `;
+        }
+
+        function highlightCommunity(e) {
+            const layer = e.target;
+            layer.setStyle({ weight: 3, color: '#facc15', fillOpacity: commOpacity + 0.15 });
+            layer.bringToFront();
+        }
+        function resetCommunity(e) {
+            commLayer.resetStyle(e.target);
+        }
+
+        // Fetch and add the community layer
+        fetch(COMMUNITIES_URL)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                commLayer = L.geoJSON(data, {
+                    style: communityStyle,
+                    onEachFeature: (feature, layer) => {
+                        layer.bindPopup(communityPopup(feature));
+                        layer.on({
+                            mouseover: highlightCommunity,
+                            mouseout: resetCommunity
+                        });
+                    }
+                }).addTo(map);
+                hideLoader();
+            })
+            .catch(err => {
+                console.error('Community layer failed:', err);
+                hideLoader();
+            });
+
+        // --- 3b. Parks (second Calgary Open Data layer) ---
+        let parksLayer = null;
+        let parksOpacity = 0.60;
+
+        const PARKS_URL =
+            'https://data.calgary.ca/resource/kami-qbfh.geojson?$limit=3000';
+
+        function parkStyle() {
+            return {
+                color: '#059669',
+                weight: 1,
+                fillColor: '#34d399',
+                fillOpacity: parksOpacity,
+                opacity: 0.8
+            };
+        }
+
+        function parkPopup(feature) {
+            const p = feature.properties;
+            return `
+    <div class="popup-title">🌲 ${p.park_name || p.name || 'Park'}</div>
+    <div class="popup-row"><span class="popup-key">Type</span><span class="popup-val">${p.park_type || p.type || '—'}</span></div>
+    <div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${p.address || '—'}</span></div>
+  `;
+        }
+
+        // Parks are off by default; fetched on first toggle
+        let parksFetched = false;
+
+        function fetchParks() {
+            if (parksFetched) return;
+            parksFetched = true;
+            showLoader();
+            fetch(PARKS_URL)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    parksLayer = L.geoJSON(data, {
+                        style: parkStyle,
+                        onEachFeature: (feature, layer) => {
+                            layer.bindPopup(parkPopup(feature));
+                        }
+                    }).addTo(map);
+                    hideLoader();
+                })
+                .catch(err => {
+                    console.error('Parks layer failed:', err);
+                    parksFetched = false;              // allow retry
+                    hideLoader();
+                });
+        }
+
+        // ──────────────────────────────────────────────
+        // 4. Overlay toggle checkboxes
+        // ──────────────────────────────────────────────
+        document.getElementById('ov-communities').addEventListener('change', function () {
+            if (!commLayer) return;
+            this.checked ? commLayer.addTo(map) : map.removeLayer(commLayer);
+        });
+
+        document.getElementById('ov-parks').addEventListener('change', function () {
+            if (this.checked) {
+                if (!parksFetched) fetchParks();
+                else if (parksLayer) parksLayer.addTo(map);
+            } else {
+                if (parksLayer) map.removeLayer(parksLayer);
+            }
+        });
+
+        // ──────────────────────────────────────────────
+        // 5. Opacity sliders
+        // ──────────────────────────────────────────────
+        document.getElementById('op-communities').addEventListener('input', function () {
+            commOpacity = this.value / 100;
+            document.getElementById('opv-communities').textContent = this.value + '%';
+            if (commLayer) {
+                commLayer.setStyle({ fillOpacity: commOpacity });
+            }
+        });
+
+        document.getElementById('op-parks').addEventListener('input', function () {
+            parksOpacity = this.value / 100;
+            document.getElementById('opv-parks').textContent = this.value + '%';
+            if (parksLayer) {
+                parksLayer.setStyle({ fillOpacity: parksOpacity });
+            }
+        });
+
+        // ──────────────────────────────────────────────
+        // 6. Sidebar collapse / expand
+        // ──────────────────────────────────────────────
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.classList.toggle('shifted');
+            // Let Leaflet recalculate its container size after transition
+            setTimeout(() => map.invalidateSize(), 360);
+        });
+
+        // ──────────────────────────────────────────────
+        // 7. Loading overlay helpers
+        // ──────────────────────────────────────────────
+        const loaderEl = document.getElementById('loader');
+        function showLoader() { loaderEl.classList.remove('hidden'); }
+        function hideLoader() { loaderEl.classList.add('hidden'); }
+    </script>
+</body>
+
+</html>

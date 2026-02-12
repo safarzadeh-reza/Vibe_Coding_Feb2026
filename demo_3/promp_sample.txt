@@ -1,0 +1,59 @@
+You are my senior front-end engineer + technical writer. Build a clean, professional personal website suitable for PhD job searching, using only the facts found in my attached CV file as the source of truth.
+
+GOAL
+Create a responsive, accessible personal website that presents my academic background clearly and helps me get interviews.
+
+TECH CONSTRAINTS
+- Make it a static site (no backend) that I can host on GitHub Pages.
+- Use semantic HTML + modern CSS (no framework required; minimal JS only where needed).
+- Keep it fast (Lighthouse-friendly): optimize images, no heavy dependencies, no tracking by default.
+- Add basic SEO: good <title>, meta description, OpenGraph tags, and a sitemap + robots.txt.
+- Add an easy way for me to update content: store my profile data in one structured file (e.g., /data/profile.json) and generate pages from it with a simple build step OR keep it plain HTML but centralize data (choose the simplest approach for a static site).
+
+INPUTS / CONTEXT YOU MUST USE
+- My CV is included in the project as: 
+- I already have two interactive web demos I want in my portfolio:
+  1) A simple webmap (HTML-based) I previously built.
+  2) An interactive web-based visualization of Dijkstra’s algorithm.
+Assume these demos exist as folders or files in this repo (or will be added). Your job is to integrate them into the portfolio section via (a) links and (b) embedded iframes when possible.
+
+SITE STRUCTURE (REQUIRED PAGES)
+1) Home (/index.html)
+   - Name, one-line tagline, 2–3 sentence “research/impact” summary derived from CV , my image in the folder.
+   - Primary CTA buttons: “Download CV (PDF)” and “Contact”.
+   - Highlights: 3–6 bullet “focus areas / skills”.
+
+2) About (/about.html)
+   - Short bio (CV-derived).
+   - Education timeline (degree, institution, year).
+   - Research interests and methods (only if present in CV).
+
+3) CV (/cv.html)
+   - A clean, scannable HTML version of the CV with print styles (so printing to PDF looks good).
+   - Sections: Education, Experience, Publications (if any), Awards, Skills, Teaching (if any), Service (if any).
+
+4) Portfolio (/portfolio/index.html)
+   - Project cards with: title, 1–2 line problem, what I did, tools/stack, outcomes/metrics (only if in CV or provided), and links.
+   - Include two “Featured” items for the Webmap demo and Dijkstra demo:
+     - Provide an embedded live preview (iframe) if it works.
+     - Provide a clear fallback link “Open in new tab”.
+   - Add a simple filter by category (e.g., Research / Teaching / Software / GIS) using minimal JS.
+
+5) Contact (/contact.html)
+   - Show email (and other links from CV like GitHub/LinkedIn/Google Scholar if present).
+   - Add a lightweight contact form that uses a mailto: fallback (no backend).
+
+ASSETS / FILES TO GENERATE
+- /assets/css/styles.css (organized, mobile-first)
+- /assets/js/main.js (only if needed)
+- /data/profile.json (or a single-source file you pick)
+- /sitemap.xml and /robots.txt
+- A README.md with:
+  - How to deploy to GitHub Pages
+  - How to add new portfolio items
+
+IMPORTANT RULES
+- Do not invent publications, metrics, awards, employers, or dates. If a section is missing in the CV, omit it or add a placeholder note like “(Add items here)” clearly marked for me to fill in.
+
+DELIVERABLE
+Make sure all navigation links work, the layout looks good on mobile, and the embedded demos don’t break the page.

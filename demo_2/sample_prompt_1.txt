@@ -1,0 +1,18 @@
+You are my senior front-end engineer and pedagogy-focused developer. 
+
+Build me a “webmap-demo” static site using Leaflet (CDN links; no build tools) with:
+- A full-screen map and a collapsible left sidebar.
+- Basemap switcher: OpenStreetMap Standard + one alternate basemap.
+- Overlay toggles for 1–2 data layers that can be toggled on and off with opacity sliders (0–100%).
+- One overlay must come from the City of Calgary Open Data portal (data.calgary.ca) by fetching GeoJSON from a Socrata endpoint. The layer should render with a simple style and show a popup with key attributes. (Socrata supports GeoJSON output for geospatial datasets.)
+- Center the map on Calgary by default.
+
+DATA (use these defaults unless you find a better geospatial Calgary dataset)
+- Calgary community district boundaries (dataset id: surr-xmvs) as GeoJSON:
+  https://data.calgary.ca/resource/surr-xmvs.geojson?$limit=5000
+If that endpoint does not return geometry, then automatically switch to Socrata’s geospatial export endpoint pattern you know works (still from data.calgary.ca) or pick a different Calgary geospatial dataset, but explain what you changed.
+
+
+IMPORTANT
+- Keep it simple: this is for a live classroom demo, so prefer the simplest working solution over lots of features.
+- If CORS/local file loading breaks, include a one-line note in the README comment at top of index.html telling me to run a local server.

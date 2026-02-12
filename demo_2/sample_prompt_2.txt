@@ -1,0 +1,21 @@
+Improve the existing webmap-demo to a fancy stylish web map application with minimal changes
+
+GOALS
+1) Make the sidebar interactive and fancy like actuall applications:
+- Collapsible (hamburger button), smooth open/close, still usable on mobile.
+- Each overlay row has: a toggle button like an eye icon + an opacity slider (0–100%).
+- Add a “Clear overlays” button.
+
+2) Add simple map tools with fancy style:
+- Add drawing and editing tools using Leaflet.draw (draw marker/polyline/polygon/rectangle; edit; delete). 
+- Save drawn features to localStorage and restore them on page load.
+- Add an “Export drawings as GeoJSON” button that downloads a .geojson file.
+
+CONSTRAINTS
+- Keep dependencies lightweight.
+- Keep code organized.
+
+DELIVERABLE
+Modify the web map as needed and output the fancy web map application which looks like commercial web map applications. Make sure everything still runs as a static site with simply just opening html file.
+
+
