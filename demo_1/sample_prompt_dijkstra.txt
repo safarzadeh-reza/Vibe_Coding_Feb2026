@@ -1,0 +1,56 @@
+You are my senior front-end engineer and pedagogy-focused developer. Build a polished, fancy, interactive, web-based teaching app for Dijkstra’s algorithm.
+
+PRODUCT GOAL
+A self-contained static website that teaches Dijkstra step-by-step and lets users create and play with different graph scenarios while seeing every internal state change.
+
+TECH CONSTRAINTS
+- Static site only (GitHub Pages friendly). No backend.
+
+
+- No heavy build tools; no React/Vue.
+- Keep code modular and readable.
+
+CORE FEATURES (MUST HAVE)
+1) Interactive graph canvas
+- Add node, drag node, delete node.
+- Add edge (click node A then node B) and set a non-negative weight.
+- Toggle directed/undirected graph.
+- Validate: if any weight is negative, show an error and disable “Run”.
+
+2) Algorithm controls
+- Choose a start node (and optional target node).
+- Buttons: Run, Step, Back, Play/Pause, Reset.
+- Speed slider for autoplay.
+- Step counter (k).
+
+3) “Show me the internals” panels (always visible on desktop, collapsible on mobile)
+- Distance table: dist[v] (Infinity shown clearly) + prev[v].
+- Visited/finalized set.
+- Priority queue view (list of (node, tentativeDistance) in order).
+- Pseudocode panel with the currently-executing line highlighted.
+
+4) Visual explanation on the graph
+- Clearly indicate: current node popped from queue, relaxed edges, updated neighbors.
+- Color legend and status chips (UNVISITED / IN QUEUE / FINALIZED / UPDATED).
+
+5) Guided learning mode
+- A left “Lesson” sidebar with short steps:
+  - What problem Dijkstra solves.
+  - Preconditions (non-negative weights).
+  - What dist/prev/priority queue mean.
+
+- Each lesson step has a “Show on graph” action that sets up a small example graph and walks through 3–6 steps.
+
+6) Scenarios
+Provide 4 built-in scenarios users can load:
+- Simple 6-node example.
+- Grid-like graph (pathfinding vibe).
+- Disconnected graph (unreachable nodes).
+- Multiple equal shortest paths.
+
+QUALITY / UX
+- Make it look “fancy”: clean typography, dark/light mode toggle, smooth transitions, responsive layout.
+- Accessibility: keyboard navigation for controls, visible focus, ARIA labels for buttons and panels.
+
+DELIVERABLE
+Create the full working app under dijkstra-fast/ and ensure it runs simply by opening index.html.
