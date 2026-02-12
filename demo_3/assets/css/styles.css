@@ -339,6 +339,7 @@ img {
   font-weight: 800;
   margin-bottom: var(--space-2);
   letter-spacing: -0.02em;
+  color: var(--color-white);
 }
 
 .hero__tagline {
@@ -535,6 +536,7 @@ img {
 .page-header__title {
   font-size: var(--font-size-4xl);
   margin-bottom: var(--space-4);
+  color: var(--color-white);
 }
 
 .page-header__subtitle {

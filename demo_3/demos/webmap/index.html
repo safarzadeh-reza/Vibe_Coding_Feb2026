@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--
+    ╔══════════════════════════════════════════════════════════════╗
+    ║  webmap-demo — Leaflet Classroom Demo (Enhanced)            ║
+    ║  Author: Reza                                                ║
+    ║                                                              ║
+    ║  CORS NOTE: If you open this file directly (file://) and    ║
+    ║  the Calgary data layers don't load, run a local server:    ║
+    ║    python -m http.server 8000                                ║
+    ║  Then visit http://localhost:8000                             ║
+    ╚══════════════════════════════════════════════════════════════╝
+    -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calgary Webmap Studio</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        /* ═══════════════════════════════════════════════
+           RESET & BASE
+           ═══════════════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* ═══════════════════════════════════════════════
+           CSS CUSTOM PROPERTIES
+           ═══════════════════════════════════════════════ */
+        :root {
+            --sidebar-w: 340px;
+            --bg-primary: #0f1117;
+            --bg-secondary: #161920;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-medium: rgba(255, 255, 255, 0.10);
+            --text-primary: #e8ecf4;
+            --text-secondary: #8b93a7;
+            --text-muted: #555d6f;
+            --accent-blue: #60a5fa;
+            --accent-blue-dim: rgba(96, 165, 250, 0.15);
+            --accent-purple: #a78bfa;
+            --accent-green: #34d399;
+            --accent-amber: #fbbf24;
+            --accent-rose: #fb7185;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ═══════════════════════════════════════════════
+           LAYOUT
+           ═══════════════════════════════════════════════ */
+        #app {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        /* ═══════════════════════════════════════════════
+           SIDEBAR
+           ═══════════════════════════════════════════════ */
+        #sidebar {
+            width: var(--sidebar-w);
+            min-width: var(--sidebar-w);
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.45);
+            overflow: hidden;
+            transition: transform var(--transition-smooth),
+                opacity 0.25s ease,
+                box-shadow var(--transition-smooth);
+        }
+
+        #sidebar.collapsed {
+            transform: translateX(calc(-1 * var(--sidebar-w)));
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        /* Scrollable content area */
+        #sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #sidebar-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #sidebar-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        #sidebar-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ── Header ── */
+        #sidebar-header {
+            padding: 22px 22px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(96, 165, 250, 0.25);
+        }
+
+        .header-text h1 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-text p {
+            margin-top: 2px;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Panels ── */
+        .panel {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .panel-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .panel-badge {
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: var(--accent-blue-dim);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* ── Basemap Cards ── */
+        .basemap-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .basemap-card {
+            position: relative;
+            border: 2px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 12px 10px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+            background: var(--bg-card);
+        }
+
+        .basemap-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-1px);
+        }
+
+        .basemap-card.active {
+            border-color: var(--accent-blue);
+            background: var(--accent-blue-dim);
+        }
+
+        .basemap-card input {
+            display: none;
+        }
+
+        .basemap-icon {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        .basemap-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .basemap-card.active .basemap-label {
+            color: var(--accent-blue);
+        }
+
+        /* ── Overlay Row ── */
+        .overlay-row {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            margin-bottom: 8px;
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .overlay-row:hover {
+            border-color: var(--border-medium);
+        }
+
+        .overlay-row.active {
+            border-color: rgba(96, 165, 250, 0.25);
+            box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.08);
+        }
+
+        .overlay-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+        }
+
+        /* Eye toggle button */
+        .eye-toggle {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .eye-toggle svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .eye-toggle:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .eye-toggle.visible {
+            color: var(--accent-blue);
+        }
+
+        .overlay-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .overlay-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .overlay-swatch {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .overlay-meta {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        /* Opacity slider row */
+        .overlay-slider {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px 10px 54px;
+        }
+
+        .slider-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .slider-track {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider-track::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(96, 165, 250, 0.4);
+            transition: transform 0.15s;
+        }
+
+        .slider-track::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .slider-track::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-val {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 30px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── Action Buttons ── */
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-medium);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.danger:hover {
+            border-color: rgba(251, 113, 133, 0.3);
+            color: var(--accent-rose);
+            background: rgba(251, 113, 133, 0.06);
+        }
+
+        .action-btn.export:hover {
+            border-color: rgba(52, 211, 153, 0.3);
+            color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.06);
+        }
+
+        /* ── Feature count badge ── */
+        .draw-count {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 4px 0 0;
+        }
+
+        .draw-count strong {
+            color: var(--accent-blue);
+        }
+
+        /* ── Status Bar ── */
+        #status-bar {
+            padding: 14px 20px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-subtle);
+            line-height: 1.6;
+            flex-shrink: 0;
+        }
+
+        #status-bar a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        #status-bar a:hover {
+            color: var(--accent-purple);
+        }
+
+        /* ═══════════════════════════════════════════════
+           HAMBURGER / TOGGLE BUTTON
+           ═══════════════════════════════════════════════ */
+        #sidebar-toggle {
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            z-index: 1100;
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            background: rgba(15, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            transition: left var(--transition-smooth),
+                background 0.2s,
+                border-color 0.2s,
+                transform 0.15s;
+        }
+
+        #sidebar-toggle:hover {
+            background: rgba(96, 165, 250, 0.15);
+            border-color: rgba(96, 165, 250, 0.3);
+            transform: scale(1.05);
+        }
+
+        #sidebar-toggle.shifted {
+            left: calc(var(--sidebar-w) + 14px);
+        }
+
+        /* Hamburger lines */
+        .hamburger {
+            width: 18px;
+            height: 14px;
+            position: relative;
+        }
+
+        .hamburger span {
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            border-radius: 2px;
+            background: currentColor;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger span:nth-child(1) {
+            top: 0;
+        }
+
+        .hamburger span:nth-child(2) {
+            top: 6px;
+        }
+
+        .hamburger span:nth-child(3) {
+            top: 12px;
+        }
+
+        /* X animation when open */
+        #sidebar-toggle.shifted .hamburger span:nth-child(1) {
+            top: 6px;
+            transform: rotate(45deg);
+        }
+
+        #sidebar-toggle.shifted .hamburger span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-6px);
+        }
+
+        #sidebar-toggle.shifted .hamburger span:nth-child(3) {
+            top: 6px;
+            transform: rotate(-45deg);
+        }
+
+        /* ═══════════════════════════════════════════════
+           MAP
+           ═══════════════════════════════════════════════ */
+        #map {
+            flex: 1;
+            min-width: 0;
+            position: relative;
+        }
+
+        /* ═══════════════════════════════════════════════
+           LEAFLET OVERRIDES
+           ═══════════════════════════════════════════════ */
+        /* Popup */
+        .leaflet-popup-content-wrapper {
+            border-radius: var(--radius-lg) !important;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 0.82rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .leaflet-popup-tip {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .popup-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            color: #1e293b;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .popup-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            gap: 12px;
+        }
+
+        .popup-row:not(:last-child) {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .popup-key {
+            color: #64748b;
+            font-size: 0.78rem;
+        }
+
+        .popup-val {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.78rem;
+        }
+
+        /* Zoom control */
+        .leaflet-control-zoom a {
+            background: rgba(15, 17, 23, 0.85) !important;
+            backdrop-filter: blur(8px);
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-subtle) !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 16px !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: rgba(96, 165, 250, 0.2) !important;
+        }
+
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+            border-radius: var(--radius-md) !important;
+            overflow: hidden;
+        }
+
+        /* Attribution */
+        .leaflet-control-attribution {
+            background: rgba(15, 17, 23, 0.7) !important;
+            color: var(--text-muted) !important;
+            font-size: 0.6rem !important;
+            backdrop-filter: blur(8px);
+            border-radius: var(--radius-sm) 0 0 0 !important;
+        }
+
+        .leaflet-control-attribution a {
+            color: var(--accent-blue) !important;
+        }
+
+        /* Draw toolbar */
+        .leaflet-draw-toolbar a {
+            background-color: rgba(15, 17, 23, 0.85) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+            width: 34px !important;
+            height: 34px !important;
+            line-height: 34px !important;
+        }
+
+        .leaflet-draw-toolbar a:hover {
+            background-color: rgba(96, 165, 250, 0.2) !important;
+        }
+
+        .leaflet-draw-actions a {
+            background: rgba(15, 17, 23, 0.9) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-subtle) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.75rem !important;
+        }
+
+        /* ═══════════════════════════════════════════════
+           LOADING OVERLAY
+           ═══════════════════════════════════════════════ */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: rgba(15, 17, 23, 0.6);
+            backdrop-filter: blur(6px);
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(96, 165, 250, 0.15);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════
+           TOAST NOTIFICATION
+           ═══════════════════════════════════════════════ */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            z-index: 9999;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            background: rgba(15, 17, 23, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-medium);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ═══════════════════════════════════════════════
+           MOBILE RESPONSIVE
+           ═══════════════════════════════════════════════ */
+        @media (max-width: 640px) {
+            :root {
+                --sidebar-w: 100vw;
+            }
+
+            #sidebar {
+                position: fixed;
+                inset: 0;
+                width: 100vw;
+                min-width: 100vw;
+                z-index: 2000;
+            }
+
+            #sidebar.collapsed {
+                transform: translateX(-100vw);
+            }
+
+            #sidebar-toggle {
+                z-index: 2100;
+            }
+
+            #sidebar-toggle.shifted {
+                left: calc(100vw - 56px);
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 900px) {
+            :root {
+                --sidebar-w: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- ═══════ SIDEBAR ═══════ -->
+        <aside id="sidebar">
+            <div id="sidebar-header">
+                <div class="logo-icon">🗺️</div>
+                <div class="header-text">
+                    <h1>Calgary Webmap</h1>
+                    <p>Interactive Map Studio</p>
+                </div>
+            </div>
+
+            <div id="sidebar-scroll">
+                <!-- ── Basemap Switcher ── -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Basemap</span>
+                    </div>
+                    <div class="basemap-grid">
+                        <label class="basemap-card active" data-bm="osm">
+                            <input type="radio" name="basemap" value="osm" checked />
+                            <div class="basemap-icon">🌍</div>
+                            <div class="basemap-label">OpenStreetMap</div>
+                        </label>
+                        <label class="basemap-card" data-bm="carto">
+                            <input type="radio" name="basemap" value="carto" />
+                            <div class="basemap-icon">🌑</div>
+                            <div class="basemap-label">Dark Matter</div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ── Data Layers ── -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Data Layers</span>
+                        <span class="panel-badge" id="layer-count-badge">1 active</span>
+                    </div>
+
+                    <!-- Community Boundaries -->
+                    <div class="overlay-row active" id="row-communities">
+                        <div class="overlay-main">
+                            <button class="eye-toggle visible" id="eye-communities" title="Toggle visibility">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                            <div class="overlay-info">
+                                <div class="overlay-name">
+                                    <span class="overlay-swatch" style="background: var(--accent-blue);"></span>
+                                    Community Boundaries
+                                </div>
+                                <div class="overlay-meta">Calgary Open Data · Polygons</div>
+                            </div>
+                        </div>
+                        <div class="overlay-slider">
+                            <span class="slider-label">Opacity</span>
+                            <input type="range" class="slider-track" min="0" max="100" value="50" id="op-communities" />
+                            <span class="slider-val" id="opv-communities">50%</span>
+                        </div>
+                    </div>
+
+                    <!-- Parks -->
+                    <div class="overlay-row" id="row-parks">
+                        <div class="overlay-main">
+                            <button class="eye-toggle" id="eye-parks" title="Toggle visibility">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                            <div class="overlay-info">
+                                <div class="overlay-name">
+                                    <span class="overlay-swatch" style="background: var(--accent-green);"></span>
+                                    Parks
+                                </div>
+                                <div class="overlay-meta">Calgary Open Data · Polygons</div>
+                            </div>
+                        </div>
+                        <div class="overlay-slider">
+                            <span class="slider-label">Opacity</span>
+                            <input type="range" class="slider-track" min="0" max="100" value="60" id="op-parks" />
+                            <span class="slider-val" id="opv-parks">60%</span>
+                        </div>
+                    </div>
+
+                    <!-- Clear overlays -->
+                    <button class="action-btn danger" id="btn-clear-overlays">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                        Clear All Overlays
+                    </button>
+                </div>
+
+                <!-- ── Drawing Tools ── -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Drawing Tools</span>
+                        <span class="panel-badge">Leaflet.draw</span>
+                    </div>
+                    <p style="font-size:0.72rem; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">
+                        Use the toolbar on the map to draw markers, lines, polygons, and rectangles. Drawings are saved
+                        automatically.
+                    </p>
+                    <div class="draw-count" id="draw-count">
+                        <strong>0</strong> features saved
+                    </div>
+                    <div style="height: 10px;"></div>
+                    <button class="action-btn export" id="btn-export">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Export Drawings as GeoJSON
+                    </button>
+                    <button class="action-btn danger" id="btn-clear-drawings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        Clear All Drawings
+                    </button>
+                </div>
+            </div>
+
+            <div id="status-bar">
+                Data: <a href="https://data.calgary.ca" target="_blank" rel="noopener">City of Calgary Open
+                    Data</a><br />
+                Built with <a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet 1.9</a>
+                + <a href="https://leaflet.github.io/Leaflet.draw/" target="_blank" rel="noopener">Leaflet.draw</a>
+            </div>
+        </aside>
+
+        <!-- ═══════ TOGGLE BUTTON ═══════ -->
+        <button id="sidebar-toggle" class="shifted" title="Toggle sidebar">
+            <div class="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </button>
+
+        <!-- ═══════ MAP ═══════ -->
+        <div id="map">
+            <div class="loading-overlay" id="loader">
+                <div class="spinner"></div>
+                <div class="loading-text">Loading Calgary data…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ═══════ JS DEPENDENCIES ═══════ -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+    <script>
+        /* ════════════════════════════════════════════════════════════
+           APP LOGIC
+           ════════════════════════════════════════════════════════════ */
+
+        // ── SVG icon strings (eye-open / eye-closed) ──
+        const EYE_OPEN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        const EYE_CLOSED = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+        <line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+        // ── Toast helper ──
+        const toastEl = document.getElementById('toast');
+        let toastTimer;
+        function showToast(msg) {
+            clearTimeout(toastTimer);
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+        }
+
+        // ── Loading overlay ──
+        const loaderEl = document.getElementById('loader');
+        function showLoader() { loaderEl.classList.remove('hidden'); }
+        function hideLoader() { loaderEl.classList.add('hidden'); }
+
+        // ══════════════════════════════════════════════
+        // 1. MAP INITIALIZATION
+        // ══════════════════════════════════════════════
+        const map = L.map('map', {
+            center: [51.0447, -114.0719],
+            zoom: 11,
+            zoomControl: false
+        });
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // ══════════════════════════════════════════════
+        // 2. BASEMAP LAYERS
+        // ══════════════════════════════════════════════
+        const basemaps = {
+            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }),
+            carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 20,
+                attribution: '&copy; <a href="https://carto.com/">CARTO</a> &middot; OSM'
+            })
+        };
+        basemaps.osm.addTo(map);
+
+        // Basemap card selection
+        document.querySelectorAll('.basemap-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.basemap-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                const val = card.querySelector('input').value;
+                Object.values(basemaps).forEach(l => map.removeLayer(l));
+                basemaps[val].addTo(map);
+            });
+        });
+
+        // ══════════════════════════════════════════════
+        // 3. DATA OVERLAY LAYERS
+        // ══════════════════════════════════════════════
+
+        // Visibility & opacity state
+        const overlayState = {
+            communities: { visible: true, opacity: 0.50, layer: null, fetched: false },
+            parks: { visible: false, opacity: 0.60, layer: null, fetched: false }
+        };
+
+        function updateBadge() {
+            const count = Object.values(overlayState).filter(s => s.visible && s.layer).length;
+            document.getElementById('layer-count-badge').textContent = count + ' active';
+        }
+
+        // ── 3a. Community Boundaries ──
+        const COMMUNITIES_URL = 'https://data.calgary.ca/resource/surr-xmvs.geojson?$limit=5000';
+
+        function communityStyle() {
+            return {
+                color: '#3b82f6', weight: 1.5,
+                fillColor: '#60a5fa',
+                fillOpacity: overlayState.communities.opacity,
+                opacity: 0.9
+            };
+        }
+        function communityPopup(f) {
+            const p = f.properties;
+            return `<div class="popup-title">${p.name || 'Unknown'}</div>
+        <div class="popup-row"><span class="popup-key">Sector</span><span class="popup-val">${p.sector || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Class</span><span class="popup-val">${p.class || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Code</span><span class="popup-val">${p.comm_code || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Structure</span><span class="popup-val">${p.comm_structure || '—'}</span></div>`;
+        }
+
+        fetch(COMMUNITIES_URL)
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+            .then(data => {
+                const s = overlayState.communities;
+                s.layer = L.geoJSON(data, {
+                    style: communityStyle,
+                    onEachFeature: (feature, layer) => {
+                        layer.bindPopup(communityPopup(feature));
+                        layer.on({
+                            mouseover: e => { e.target.setStyle({ weight: 3, color: '#facc15', fillOpacity: s.opacity + 0.15 }); e.target.bringToFront(); },
+                            mouseout: e => { s.layer.resetStyle(e.target); }
+                        });
+                    }
+                }).addTo(map);
+                s.fetched = true;
+                hideLoader();
+                updateBadge();
+            })
+            .catch(err => { console.error('Communities:', err); hideLoader(); });
+
+        // ── 3b. Parks ──
+        const PARKS_URL = 'https://data.calgary.ca/resource/kami-qbfh.geojson?$limit=3000';
+
+        function parkStyle() {
+            return {
+                color: '#059669', weight: 1,
+                fillColor: '#34d399',
+                fillOpacity: overlayState.parks.opacity,
+                opacity: 0.8
+            };
+        }
+        function parkPopup(f) {
+            const p = f.properties;
+            return `<div class="popup-title">🌲 ${p.park_name || p.name || 'Park'}</div>
+        <div class="popup-row"><span class="popup-key">Type</span><span class="popup-val">${p.park_type || p.type || '—'}</span></div>
+        <div class="popup-row"><span class="popup-key">Address</span><span class="popup-val">${p.address || '—'}</span></div>`;
+        }
+
+        function fetchParks() {
+            const s = overlayState.parks;
+            if (s.fetched) return;
+            s.fetched = true;
+            showLoader();
+            fetch(PARKS_URL)
+                .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+                .then(data => {
+                    s.layer = L.geoJSON(data, {
+                        style: parkStyle,
+                        onEachFeature: (feature, layer) => { layer.bindPopup(parkPopup(feature)); }
+                    }).addTo(map);
+                    hideLoader();
+                    updateBadge();
+                })
+                .catch(err => { console.error('Parks:', err); s.fetched = false; hideLoader(); });
+        }
+
+        // ══════════════════════════════════════════════
+        // 4. EYE-TOGGLE VISIBILITY BUTTONS
+        // ══════════════════════════════════════════════
+        function setupEyeToggle(btnId, rowId, key, fetchFn) {
+            const btn = document.getElementById(btnId);
+            const row = document.getElementById(rowId);
+
+            btn.addEventListener('click', () => {
+                const s = overlayState[key];
+                s.visible = !s.visible;
+
+                // Update icon
+                btn.innerHTML = s.visible ? EYE_OPEN : EYE_CLOSED;
+                btn.classList.toggle('visible', s.visible);
+                row.classList.toggle('active', s.visible);
+
+                if (s.visible) {
+                    if (!s.fetched && fetchFn) fetchFn();
+                    else if (s.layer) s.layer.addTo(map);
+                } else {
+                    if (s.layer) map.removeLayer(s.layer);
+                }
+                updateBadge();
+            });
+        }
+
+        setupEyeToggle('eye-communities', 'row-communities', 'communities', null);
+        setupEyeToggle('eye-parks', 'row-parks', 'parks', fetchParks);
+
+        // ══════════════════════════════════════════════
+        // 5. OPACITY SLIDERS
+        // ══════════════════════════════════════════════
+        function setupSlider(sliderId, valId, key, styleFn) {
+            const slider = document.getElementById(sliderId);
+            const valEl = document.getElementById(valId);
+            slider.addEventListener('input', () => {
+                overlayState[key].opacity = slider.value / 100;
+                valEl.textContent = slider.value + '%';
+                const s = overlayState[key];
+                if (s.layer) s.layer.setStyle(styleFn());
+            });
+        }
+        setupSlider('op-communities', 'opv-communities', 'communities', communityStyle);
+        setupSlider('op-parks', 'opv-parks', 'parks', parkStyle);
+
+        // ══════════════════════════════════════════════
+        // 6. CLEAR ALL OVERLAYS
+        // ══════════════════════════════════════════════
+        document.getElementById('btn-clear-overlays').addEventListener('click', () => {
+            Object.entries(overlayState).forEach(([key, s]) => {
+                s.visible = false;
+                if (s.layer) map.removeLayer(s.layer);
+            });
+            // Reset eye buttons
+            document.querySelectorAll('.eye-toggle').forEach(btn => {
+                btn.innerHTML = EYE_CLOSED;
+                btn.classList.remove('visible');
+            });
+            document.querySelectorAll('.overlay-row').forEach(r => r.classList.remove('active'));
+            updateBadge();
+            showToast('All overlays cleared');
+        });
+
+        // ══════════════════════════════════════════════
+        // 7. SIDEBAR TOGGLE
+        // ══════════════════════════════════════════════
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.classList.toggle('shifted');
+            setTimeout(() => map.invalidateSize(), 380);
+        });
+
+        // ══════════════════════════════════════════════
+        // 8. DRAWING TOOLS (Leaflet.draw)
+        // ══════════════════════════════════════════════
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        const drawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polyline: { shapeOptions: { color: '#60a5fa', weight: 3 } },
+                polygon: { shapeOptions: { color: '#a78bfa', fillColor: '#a78bfa', fillOpacity: 0.3 } },
+                rectangle: { shapeOptions: { color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 0.2 } },
+                circle: false,
+                circlemarker: false,
+                marker: true
+            },
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            }
+        });
+        map.addControl(drawControl);
+
+        function updateDrawCount() {
+            const n = drawnItems.getLayers().length;
+            document.getElementById('draw-count').innerHTML = `<strong>${n}</strong> feature${n !== 1 ? 's' : ''} saved`;
+        }
+
+        function saveDrawings() {
+            try {
+                const gj = drawnItems.toGeoJSON();
+                localStorage.setItem('webmap-drawings', JSON.stringify(gj));
+                updateDrawCount();
+            } catch (e) { console.warn('Save failed:', e); }
+        }
+
+        function loadDrawings() {
+            try {
+                const raw = localStorage.getItem('webmap-drawings');
+                if (!raw) return;
+                const gj = JSON.parse(raw);
+                L.geoJSON(gj, {
+                    onEachFeature: (feature, layer) => { drawnItems.addLayer(layer); }
+                });
+                updateDrawCount();
+            } catch (e) { console.warn('Load failed:', e); }
+        }
+
+        // Events
+        map.on(L.Draw.Event.CREATED, e => {
+            drawnItems.addLayer(e.layer);
+            saveDrawings();
+            showToast('Feature added');
+        });
+        map.on(L.Draw.Event.EDITED, () => { saveDrawings(); showToast('Features edited'); });
+        map.on(L.Draw.Event.DELETED, () => { saveDrawings(); showToast('Features deleted'); });
+
+        // Load saved drawings on startup
+        loadDrawings();
+
+        // ══════════════════════════════════════════════
+        // 9. EXPORT DRAWINGS AS GEOJSON
+        // ══════════════════════════════════════════════
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const gj = drawnItems.toGeoJSON();
+            if (gj.features.length === 0) {
+                showToast('No drawings to export');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(gj, null, 2)], { type: 'application/geo+json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'drawings.geojson';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Exported ${gj.features.length} feature(s)`);
+        });
+
+        // ══════════════════════════════════════════════
+        // 10. CLEAR ALL DRAWINGS
+        // ══════════════════════════════════════════════
+        document.getElementById('btn-clear-drawings').addEventListener('click', () => {
+            drawnItems.clearLayers();
+            localStorage.removeItem('webmap-drawings');
+            updateDrawCount();
+            showToast('All drawings cleared');
+        });
+    </script>
+</body>
+
+</html>

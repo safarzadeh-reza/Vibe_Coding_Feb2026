@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dijkstra's Algorithm Lab — Interactive Visual Explorer</title>
+    <meta name="description"
+        content="Learn Dijkstra's shortest-path algorithm interactively. Visualise every step, inspect priority queues, distance tables, and build your own graphs." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="css/main.css" />
+</head>
+
+<body>
+    <!-- ─── SKIP LINK ─── -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ─── TOP BAR ─── -->
+    <header class="topbar" role="banner">
+        <div class="topbar__left">
+            <button id="btn-lesson-toggle" class="icon-btn" aria-label="Toggle lesson sidebar" title="Lessons">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+            </button>
+            <h1 class="topbar__title">
+                <span class="topbar__icon">◆</span> Dijkstra's Algorithm Lab
+            </h1>
+        </div>
+        <div class="topbar__right">
+            <button id="btn-theme" class="icon-btn" aria-label="Toggle dark / light mode" title="Theme">
+                <svg id="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg id="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" style="display:none">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ─── MAIN LAYOUT ─── -->
+    <div class="app-layout">
+
+        <!-- ─── LESSON SIDEBAR ─── -->
+        <aside id="lesson-sidebar" class="sidebar sidebar--lesson" role="complementary" aria-label="Guided lessons">
+            <div class="sidebar__header">
+                <h2 class="sidebar__title">📖 Lessons</h2>
+                <button id="btn-close-lesson" class="icon-btn icon-btn--sm" aria-label="Close lessons">✕</button>
+            </div>
+            <nav class="lesson-nav" aria-label="Lesson steps">
+                <ul id="lesson-list" class="lesson-list" role="list"></ul>
+            </nav>
+            <div id="lesson-content" class="lesson-content"></div>
+        </aside>
+
+        <!-- ─── CENTRE COLUMN ─── -->
+        <main id="main-content" class="main-col">
+
+            <!-- TOOLBAR -->
+            <div class="toolbar" role="toolbar" aria-label="Graph and algorithm controls">
+                <!-- Graph mode -->
+                <div class="toolbar__group">
+                    <span class="toolbar__label">Mode</span>
+                    <div class="btn-group" role="radiogroup" aria-label="Graph edit mode">
+                        <button class="btn btn--sm btn--active" id="mode-select" role="radio" aria-checked="true"
+                            data-mode="select">Select</button>
+                        <button class="btn btn--sm" id="mode-add-node" role="radio" aria-checked="false"
+                            data-mode="addNode">+ Node</button>
+                        <button class="btn btn--sm" id="mode-add-edge" role="radio" aria-checked="false"
+                            data-mode="addEdge">+ Edge</button>
+                        <button class="btn btn--sm" id="mode-delete" role="radio" aria-checked="false"
+                            data-mode="delete">Delete</button>
+                    </div>
+                </div>
+
+                <!-- Graph type toggle -->
+                <div class="toolbar__group">
+                    <label class="toggle-label" for="toggle-directed">
+                        <input type="checkbox" id="toggle-directed" class="sr-only" />
+                        <span class="toggle-track" role="switch" aria-checked="false" tabindex="0">
+                            <span class="toggle-thumb"></span>
+                        </span>
+                        <span class="toggle-text">Directed</span>
+                    </label>
+                </div>
+
+                <!-- Scenario dropdown -->
+                <div class="toolbar__group">
+                    <label for="scenario-select" class="toolbar__label">Scenario</label>
+                    <select id="scenario-select" class="select">
+                        <option value="">— Custom —</option>
+                        <option value="simple6">Simple 6-Node</option>
+                        <option value="grid">Grid Pathfinding</option>
+                        <option value="disconnected">Disconnected Graph</option>
+                        <option value="equalPaths">Multiple Equal Paths</option>
+                    </select>
+                </div>
+
+                <!-- Start / Target -->
+                <div class="toolbar__group">
+                    <label for="start-node" class="toolbar__label">Start</label>
+                    <select id="start-node" class="select select--narrow"></select>
+                </div>
+                <div class="toolbar__group">
+                    <label for="target-node" class="toolbar__label">Target</label>
+                    <select id="target-node" class="select select--narrow">
+                        <option value="">(any)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ERROR BANNER -->
+            <div id="error-banner" class="error-banner" role="alert" aria-live="polite" hidden>
+                <span id="error-msg"></span>
+                <button id="btn-dismiss-error" class="icon-btn icon-btn--sm" aria-label="Dismiss error">✕</button>
+            </div>
+
+            <!-- GRAPH CANVAS -->
+            <div class="canvas-wrap" id="canvas-wrap">
+                <svg id="graph-svg" class="graph-svg" aria-label="Graph visualisation canvas"></svg>
+                <!-- Legend -->
+                <div class="legend" aria-label="Color legend">
+                    <div class="legend__item"><span class="legend__swatch"
+                            style="background:var(--clr-unvisited)"></span>Unvisited</div>
+                    <div class="legend__item"><span class="legend__swatch"
+                            style="background:var(--clr-inqueue)"></span>In Queue</div>
+                    <div class="legend__item"><span class="legend__swatch"
+                            style="background:var(--clr-current)"></span>Current</div>
+                    <div class="legend__item"><span class="legend__swatch"
+                            style="background:var(--clr-finalized)"></span>Finalized</div>
+                    <div class="legend__item"><span class="legend__swatch"
+                            style="background:var(--clr-updated)"></span>Updated</div>
+                    <div class="legend__item"><span class="legend__swatch legend__swatch--path"></span>Shortest Path
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALGORITHM CONTROLS -->
+            <div class="algo-controls" role="group" aria-label="Algorithm playback controls">
+                <button id="btn-run" class="btn btn--primary" aria-label="Run algorithm">▶ Run</button>
+                <button id="btn-step" class="btn" aria-label="Step forward" disabled>Step →</button>
+                <button id="btn-back" class="btn" aria-label="Step backward" disabled>← Back</button>
+                <button id="btn-playpause" class="btn" aria-label="Play or pause auto-step" disabled>⏵ Play</button>
+                <button id="btn-reset" class="btn btn--danger" aria-label="Reset algorithm">⟲ Reset</button>
+                <div class="speed-control">
+                    <label for="speed-slider" class="toolbar__label">Speed</label>
+                    <input type="range" id="speed-slider" min="1" max="10" value="5" class="slider"
+                        aria-label="Autoplay speed" />
+                </div>
+                <div class="step-counter" aria-live="polite">
+                    Step <strong id="step-k">0</strong>
+                </div>
+            </div>
+        </main>
+
+        <!-- ─── RIGHT PANELS ─── -->
+        <aside class="sidebar sidebar--panels" role="complementary" aria-label="Algorithm internals">
+            <button id="btn-panels-toggle" class="icon-btn panels-toggle-btn"
+                aria-label="Toggle panels sidebar">☰</button>
+
+            <!-- Distance Table -->
+            <details class="panel" open>
+                <summary class="panel__header" id="panel-dist-header">📊 Distance Table</summary>
+                <div class="panel__body" id="panel-dist">
+                    <table class="data-table" id="dist-table" aria-label="Distance and previous-node table">
+                        <thead>
+                            <tr>
+                                <th>Node</th>
+                                <th>dist[]</th>
+                                <th>prev[]</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </details>
+
+            <!-- Visited Set -->
+            <details class="panel" open>
+                <summary class="panel__header" id="panel-visited-header">✅ Finalized Set</summary>
+                <div class="panel__body" id="panel-visited">
+                    <div id="visited-chips" class="chip-row"></div>
+                </div>
+            </details>
+
+            <!-- Priority Queue -->
+            <details class="panel" open>
+                <summary class="panel__header" id="panel-pq-header">📋 Priority Queue</summary>
+                <div class="panel__body" id="panel-pq">
+                    <ol id="pq-list" class="pq-list" aria-label="Priority queue contents"></ol>
+                </div>
+            </details>
+
+            <!-- Pseudocode -->
+            <details class="panel" open>
+                <summary class="panel__header" id="panel-code-header">💻 Pseudocode</summary>
+                <div class="panel__body panel__body--code" id="panel-code">
+                    <pre id="pseudocode" class="pseudocode"
+                        aria-label="Algorithm pseudocode with highlighted current line"></pre>
+                </div>
+            </details>
+        </aside>
+    </div>
+
+    <!-- ─── EDGE WEIGHT DIALOG ─── -->
+    <dialog id="edge-dialog" class="dialog" aria-labelledby="edge-dialog-title">
+        <h3 id="edge-dialog-title">Set Edge Weight</h3>
+        <form id="edge-form" method="dialog">
+            <label for="edge-weight-input">Weight (≥ 0):</label>
+            <input type="number" id="edge-weight-input" min="0" step="any" value="1" class="input" required autofocus />
+            <div class="dialog__actions">
+                <button type="submit" class="btn btn--primary">Add Edge</button>
+                <button type="button" id="btn-cancel-edge" class="btn">Cancel</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- ─── SCRIPTS ─── -->
+    <script src="js/graph.js"></script>
+    <script src="js/dijkstra.js"></script>
+    <script src="js/scenarios.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
